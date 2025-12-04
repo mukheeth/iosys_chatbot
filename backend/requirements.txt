@@ -1,10 +1,10 @@
 # Web Framework
-flask==2.3.3
-flask-cors==4.0.0
-gunicorn==21.2.0
+flask>=2.3.0
+flask-cors>=4.0.0
+gunicorn>=21.2.0
 
 # Environment Variables
-python-dotenv==1.0.0
+python-dotenv>=1.0.0
 
 # LangChain Ecosystem
 langchain>=1.1.0
@@ -13,19 +13,22 @@ langchain-chroma>=0.1.4
 langchain-groq>=1.1.0
 
 # Vector Database
-chromadb==0.5.5
+chromadb>=0.5.5
 
 # LLM API
-groq==0.8.0
+groq>=0.8.0
 
 # HTTP Requests
 requests>=2.32.5
 
 # PDF Processing
-pypdf==3.17.4
+pypdf>=3.17.0
 
-# Data Validation
-pydantic==2.8.2
+# Data Validation (compatible with langchain)
+pydantic>=2.7.0,<3.0.0
+
+# NumPy (required by chromadb, must be <2.0)
+numpy>=1.22.5,<2.0.0
 
 # HuggingFace Hub (for API embeddings only - no local models)
 huggingface-hub>=0.33.4
