@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { Send, Bot, User, FileText, AlertCircle, CheckCircle } from 'lucide-react';
+import { Send, User, AlertCircle, CheckCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 // Add custom CSS for blinking animation
@@ -14,7 +14,7 @@ const blinkingStyle = `
   }
 `;
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 function App() {
   const [messages, setMessages] = useState([]);
