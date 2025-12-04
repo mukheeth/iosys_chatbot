@@ -19,7 +19,7 @@ chromadb==0.5.5
 groq==0.8.0
 
 # HTTP Requests
-requests==2.31.0
+requests>=2.32.5
 
 # PDF Processing
 pypdf==3.17.4
