@@ -1,0 +1,6 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="12" fill="#4A7C59"/>
+  <text x="32" y="20" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="8" font-weight="normal">i</text>
+  <circle cx="24" cy="28" r="4" fill="#22C55E"/>
+  <text x="32" y="40" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="bold">SYS</text>
+</svg>
