@@ -11,19 +11,14 @@ load_dotenv()
 # LangChain imports
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 from langchain_groq import ChatGroq
 from langchain_classic.chains import RetrievalQA
 from langchain_core.prompts import PromptTemplate
 from langchain_core.documents import Document
 
-# Try to import modern HuggingFace embeddings (optional)
-try:
-    from langchain_huggingface import HuggingFaceEndpointEmbeddings
-    HF_ENDPOINT_AVAILABLE = True
-except ImportError:
-    HF_ENDPOINT_AVAILABLE = False
+# HuggingFace API embeddings (required for production)
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 
 logger = logging.getLogger(__name__)
 
@@ -71,37 +66,23 @@ class RAGSystem:
             r'.*appointment\s+(request|booking)'
         ]
         
-        # Initialize embeddings using HuggingFace (API or Local)
+        # Initialize embeddings using HuggingFace API (Production Mode)
         try:
             huggingface_api_key = os.getenv("HUGGINGFACE_API_KEY")
             
-            if huggingface_api_key and HF_ENDPOINT_AVAILABLE:
-                # Use modern HuggingFace Endpoint API
-                try:
-                    self.embeddings = HuggingFaceEndpointEmbeddings(
-                        model="sentence-transformers/all-MiniLM-L6-v2",
-                        huggingfacehub_api_token=huggingface_api_key
-                    )
-                    logger.info("Initialized HuggingFace Endpoint API embeddings for ChromaDB storage")
-                except Exception as api_error:
-                    logger.warning(f"Failed to initialize HuggingFace API: {api_error}. Falling back to local embeddings.")
-                    # Fallback to local embeddings
-                    self.embeddings = HuggingFaceEmbeddings(
-                        model_name="sentence-transformers/all-MiniLM-L6-v2",
-                        model_kwargs={'device': 'cpu'}
-                    )
-                    logger.info("Initialized local HuggingFace embeddings for ChromaDB storage")
-            else:
-                # Use local embeddings if no API key provided or package not installed
-                self.embeddings = HuggingFaceEmbeddings(
-                    model_name="sentence-transformers/all-MiniLM-L6-v2",
-                    model_kwargs={'device': 'cpu'}
-                )
-                if huggingface_api_key and not HF_ENDPOINT_AVAILABLE:
-                    logger.info("HuggingFace API key found but langchain-huggingface not installed. Install with: pip install langchain-huggingface")
-                logger.info("Initialized local HuggingFace embeddings for ChromaDB storage")
+            if not huggingface_api_key:
+                raise ValueError("HUGGINGFACE_API_KEY not found in environment variables. Please set it in Render environment.")
+            
+            # Use HuggingFace Endpoint API (lightweight, no local models)
+            self.embeddings = HuggingFaceEndpointEmbeddings(
+                model="sentence-transformers/all-MiniLM-L6-v2",
+                huggingfacehub_api_token=huggingface_api_key
+            )
+            logger.info("✅ Initialized HuggingFace API embeddings (Production Mode - No local models)")
+            
         except Exception as e:
-            logger.warning(f"Failed to initialize embeddings: {e}. Falling back to basic text search.")
+            logger.error(f"❌ Failed to initialize HuggingFace API embeddings: {e}")
+            logger.error("Please ensure HUGGINGFACE_API_KEY is set in environment variables")
             self.embeddings = None
         
         # Initialize text splitter
