@@ -66,3 +66,98 @@ code {
   display: list-item !important;
   width: 100% !important;
 }
+
+/* Cal.com Modal Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .cal-modal-overlay {
+    padding: 10px !important;
+    align-items: flex-start !important;
+    padding-top: 20px !important;
+  }
+  
+  .cal-modal-container {
+    width: 95% !important;
+    height: auto !important;
+    max-height: 95vh !important;
+    min-height: 500px !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  #my-cal-inline-30-min-meeting {
+    min-height: 500px !important;
+    padding-bottom: 120px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex: 1 !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Ensure Cal.com content is scrollable */
+  #my-cal-inline-30-min-meeting > * {
+    min-height: 500px !important;
+  }
+  
+  /* Make sure confirm button area is visible and accessible */
+  #my-cal-inline-30-min-meeting button,
+  #my-cal-inline-30-min-meeting [role="button"] {
+    min-height: 44px !important;
+    padding: 12px 20px !important;
+    font-size: 16px !important;
+    margin-bottom: 10px !important;
+  }
+}
+
+/* Additional mobile fixes for Cal.com content */
+@media (max-width: 480px) {
+  .cal-modal-overlay {
+    padding: 0 !important;
+  }
+  
+  .cal-modal-container {
+    width: 100% !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+  
+  #my-cal-inline-30-min-meeting {
+    padding-bottom: 150px !important;
+    min-height: calc(100vh - 100px) !important;
+  }
+}
+
+/* Force Cal.com content to be scrollable and show all buttons */
+#my-cal-inline-30-min-meeting {
+  position: relative !important;
+}
+
+#my-cal-inline-30-min-meeting * {
+  box-sizing: border-box !important;
+}
+
+/* Ensure form buttons are visible */
+#my-cal-inline-30-min-meeting form {
+  padding-bottom: 80px !important;
+  margin-bottom: 20px !important;
+}
+
+/* Mobile-specific button visibility */
+@media (max-width: 768px) {
+  #my-cal-inline-30-min-meeting button[type="submit"],
+  #my-cal-inline-30-min-meeting .btn-primary,
+  #my-cal-inline-30-min-meeting [class*="confirm"],
+  #my-cal-inline-30-min-meeting [class*="Confirm"] {
+    position: sticky !important;
+    bottom: 0 !important;
+    background: #000 !important;
+    color: #fff !important;
+    width: 100% !important;
+    padding: 16px !important;
+    margin-top: 20px !important;
+    z-index: 1000 !important;
+    border-radius: 0 !important;
+  }
+}

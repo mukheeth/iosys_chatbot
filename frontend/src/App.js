@@ -739,6 +739,7 @@ function App() {
       {/* Cal.com Booking Modal */}
       {isCalModalOpen && (
         <div 
+          className="cal-modal-overlay"
           style={{
             display: 'flex',
             position: 'fixed',
@@ -751,7 +752,8 @@ function App() {
             padding: '20px',
             boxSizing: 'border-box',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            overflow: 'auto'
           }}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -760,6 +762,7 @@ function App() {
           }}
         >
           <div 
+            className="cal-modal-container"
             style={{
               position: 'relative',
               width: '100%',
@@ -769,7 +772,9 @@ function App() {
               background: 'white',
               borderRadius: '12px',
               overflow: 'hidden',
-              boxShadow: '0 10px 50px rgba(0,0,0,0.3)'
+              boxShadow: '0 10px 50px rgba(0,0,0,0.3)',
+              display: 'flex',
+              flexDirection: 'column'
             }}
           >
             <button
@@ -802,7 +807,9 @@ function App() {
                 width: '100%',
                 height: '100%',
                 overflow: 'auto',
-                minHeight: '600px'
+                minHeight: '600px',
+                paddingBottom: '20px',
+                WebkitOverflowScrolling: 'touch'
               }}
               id="my-cal-inline-30-min-meeting"
             ></div>
