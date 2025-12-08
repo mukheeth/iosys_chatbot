@@ -29,19 +29,26 @@ function App() {
     phone: '',
     message: ''
   });
-  const [meetingForm, setMeetingForm] = useState({
-    isActive: false,
-    name: '',
-    email: '',
-    phone: '',
-    meeting_purpose: ''
-  });
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
-  const [isSubmittingMeeting, setIsSubmittingMeeting] = useState(false);
+  const [contactFormSubmitted, setContactFormSubmitted] = useState(false);
+  const [isCalModalOpen, setIsCalModalOpen] = useState(false);
+  const [calInitialized, setCalInitialized] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Helper function to remove duplicate "What would you like to explore" text
+  const cleanResponseContent = (content) => {
+    if (!content) return content;
+    let cleaned = content;
+    cleaned = cleaned.replace(/\*\*What would you like to explore\?\*\*/g, '');
+    cleaned = cleaned.replace(/What would you like to explore\?/g, '');
+    cleaned = cleaned.replace(/\*\*What would you like to explore next\?\*\*/g, '');
+    cleaned = cleaned.replace(/What would you like to explore next\?/g, '');
+    cleaned = cleaned.replace(/\n\n\n+/g, '\n\n'); // Remove extra line breaks
+    return cleaned.trim();
   };
 
   useEffect(() => {
@@ -53,7 +60,152 @@ function App() {
     // Check backend health on component mount
     console.log('🚀 App component mounted, checking backend health...');
     checkBackendHealth();
+    
+    // Initialize Cal.com loader (with error handling)
+    try {
+      if (typeof window !== 'undefined' && !window.Cal) {
+        (function (C, A, L) {
+          try {
+            let p = function (a, ar) { 
+              try {
+                a.q.push(ar); 
+              } catch (e) {
+                console.error('Cal.com queue error:', e);
+              }
+            };
+            let d = C.document;
+            C.Cal = C.Cal || function () {
+              try {
+                let cal = C.Cal;
+                let ar = arguments;
+                if (!cal.loaded) {
+                  cal.ns = {};
+                  cal.q = cal.q || [];
+                  const script = d.createElement("script");
+                  script.src = A;
+                  script.async = true;
+                  script.onerror = () => console.error('Failed to load Cal.com script');
+                  d.head.appendChild(script);
+                  cal.loaded = true;
+                }
+                if (ar[0] === L) {
+                  const api = function () { p(api, arguments); };
+                  const namespace = ar[1];
+                  api.q = api.q || [];
+                  if(typeof namespace === "string") {
+                    cal.ns[namespace] = cal.ns[namespace] || api;
+                    p(cal.ns[namespace], ar);
+                    p(cal, ["initNamespace", namespace]);
+                  } else p(cal, ar);
+                  return;
+                }
+                p(cal, ar);
+              } catch (e) {
+                console.error('Cal.com function error:', e);
+              }
+            };
+          } catch (e) {
+            console.error('Cal.com loader initialization error:', e);
+          }
+        })(window, "https://app.cal.com/embed/embed.js", "init");
+      }
+    } catch (error) {
+      console.error('Failed to initialize Cal.com loader:', error);
+    }
   }, []);
+
+  // Initialize Cal.com when modal opens
+  useEffect(() => {
+    if (isCalModalOpen && !calInitialized) {
+      let retryCount = 0;
+      const maxRetries = 10;
+      let timeoutId = null;
+      let isMounted = true;
+      
+      const initCal = () => {
+        if (!isMounted) return;
+        
+        const calElement = document.getElementById('my-cal-inline-30-min-meeting');
+        
+        if (!calElement) {
+          if (retryCount < maxRetries) {
+            retryCount++;
+            timeoutId = setTimeout(initCal, 200);
+          }
+          return;
+        }
+        
+        if (!window.Cal) {
+          if (retryCount < maxRetries) {
+            retryCount++;
+            timeoutId = setTimeout(initCal, 300);
+          } else {
+            console.error('❌ Cal.com script failed to load');
+          }
+          return;
+        }
+        
+        try {
+          // Clear any existing content
+          calElement.innerHTML = '';
+          
+          // Initialize Cal.com namespace first
+          window.Cal("init", "30-min-meeting", {origin:"https://app.cal.com"});
+          
+          // Wait a bit for namespace to be ready
+          timeoutId = setTimeout(() => {
+            if (!isMounted) return;
+            
+            try {
+              if (window.Cal && window.Cal.ns && window.Cal.ns["30-min-meeting"]) {
+                window.Cal.ns["30-min-meeting"]("inline", {
+                  elementOrSelector: "#my-cal-inline-30-min-meeting",
+                  config: {"layout":"month_view"},
+                  calLink: "shreyash.iosys/30-min-meeting",
+                });
+                window.Cal.ns["30-min-meeting"]("ui", {
+                  "hideEventTypeDetails": false,
+                  "layout": "month_view"
+                });
+                
+                setCalInitialized(true);
+                console.log('✅ Cal.com initialized successfully');
+              } else {
+                console.warn('⚠️ Cal.com namespace not ready, retrying...');
+                if (retryCount < maxRetries) {
+                  retryCount++;
+                  timeoutId = setTimeout(initCal, 500);
+                }
+              }
+            } catch (error) {
+              console.error('❌ Cal.com inline initialization error:', error);
+              if (retryCount < maxRetries && isMounted) {
+                retryCount++;
+                timeoutId = setTimeout(initCal, 500);
+              }
+            }
+          }, 500);
+        } catch (error) {
+          console.error('❌ Cal.com initialization error:', error);
+          if (retryCount < maxRetries && isMounted) {
+            retryCount++;
+            timeoutId = setTimeout(initCal, 500);
+          }
+        }
+      };
+
+      // Wait for modal to render
+      timeoutId = setTimeout(initCal, 300);
+      
+      // Cleanup function
+      return () => {
+        isMounted = false;
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      };
+    }
+  }, [isCalModalOpen, calInitialized]);
 
   const checkBackendHealth = async () => {
     console.log('🔍 Checking backend health at:', `${API_BASE_URL}/health`);
@@ -132,10 +284,9 @@ function App() {
       const botMessage = {
         id: Date.now() + 1,
         type: 'bot',
-        content: response.data.response,
+        content: cleanResponseContent(response.data.response),
         timestamp: new Date(),
         showContactForm: response.data.contact_form || false,
-        showMeetingForm: response.data.meeting_form || false,
         quickReplies: response.data.quick_replies || []
       };
 
@@ -146,16 +297,16 @@ function App() {
         return newMessages;
       });
       
-      // Activate contact form if needed
-      if (response.data.contact_form) {
+      // Activate contact form if needed (only if not already submitted)
+      if (response.data.contact_form && !contactFormSubmitted) {
         console.log('📋 Activating contact form');
         setContactForm(prev => ({ ...prev, isActive: true }));
       }
       
-      // Activate meeting form if needed
+      // Open Cal.com modal if meeting form is requested
       if (response.data.meeting_form) {
-        console.log('📅 Activating meeting form');
-        setMeetingForm(prev => ({ ...prev, isActive: true }));
+        console.log('📅 Opening Cal.com booking modal');
+        setTimeout(() => openCalModal(), 500);
       }
     } catch (error) {
       console.error('❌ Chat API request failed:', error.message);
@@ -167,7 +318,12 @@ function App() {
         id: Date.now() + 1,
         type: 'bot',
         content: 'Sorry, I encountered an error while processing your request. Please try again.',
-        timestamp: new Date()
+        timestamp: new Date(),
+        quickReplies: [
+          {"text": "Services", "value": "our_services"},
+          {"text": "Products", "value": "products"},
+          {"text": "Contact Us", "value": "contact_us"}
+        ]
       };
       
       console.log('⚠️ Error message object created:', errorMessage);
@@ -185,6 +341,8 @@ function App() {
       sendMessage();
     }
   };
+
+
 
   const handleContactSubmit = async () => {
     console.log('📧 Submitting contact form:', contactForm);
@@ -211,13 +369,14 @@ function App() {
       const successMessage = {
         id: Date.now(),
         type: 'bot',
-        content: '✅ Thank you for visiting Our Website. Your request has been sent successfully! Our team will contact you soon.',
+        content: '✅ Thank you for contacting us! Your message has been sent successfully. Our team will get back to you soon.',
         timestamp: new Date()
       };
       
       setMessages(prev => [...prev, successMessage]);
       
-      // Reset contact form
+      // Mark contact form as submitted and reset
+      setContactFormSubmitted(true);
       setContactForm({
         isActive: false,
         name: '',
@@ -233,7 +392,7 @@ function App() {
       const errorMessage = {
         id: Date.now(),
         type: 'bot',
-        content: '⚠️ Sorry, something went wrong while sending your request. Please try again later.',
+        content: '⚠️ Sorry, something went wrong while sending your message. Please try again later.',
         timestamp: new Date()
       };
       
@@ -247,70 +406,26 @@ function App() {
     setContactForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const updateMeetingField = (field, value) => {
-    setMeetingForm(prev => ({ ...prev, [field]: value }));
+  const openCalModal = () => {
+    setIsCalModalOpen(true);
+    document.body.style.overflow = 'hidden';
   };
 
-  const handleMeetingSubmit = async () => {
-    console.log('📅 Submitting meeting form:', meetingForm);
-    
-    // Validate form
-    if (!meetingForm.name || !meetingForm.email || !meetingForm.phone || !meetingForm.meeting_purpose) {
-      alert('Please fill in all required fields.');
-      return;
-    }
-    
-    setIsSubmittingMeeting(true);
-    
-    try {
-      const response = await axios.post(`${API_BASE_URL}/schedule_meeting`, {
-        name: meetingForm.name,
-        email: meetingForm.email,
-        phone: meetingForm.phone,
-        preferred_date: 'To be discussed',
-        meeting_purpose: meetingForm.meeting_purpose
-      });
-      
-      console.log('✅ Meeting request sent successfully:', response.data);
-      
-      // Add success message
-      const successMessage = {
-        id: Date.now(),
-        type: 'bot',
-        content: '✅ Thank you for scheduling a meeting with us! Your meeting request has been sent successfully. Our team will contact you soon to confirm the details.',
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, successMessage]);
-      
-      // Reset meeting form
-      setMeetingForm({
-        isActive: false,
-        name: '',
-        email: '',
-        phone: '',
-        meeting_purpose: ''
-      });
-      
-    } catch (error) {
-      console.error('❌ Meeting request failed:', error);
-      
-      // Add error message
-      const errorMessage = {
-        id: Date.now(),
-        type: 'bot',
-        content: '⚠️ Sorry, something went wrong while scheduling your meeting. Please try again later.',
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsSubmittingMeeting(false);
-    }
+  const closeCalModal = () => {
+    setIsCalModalOpen(false);
+    document.body.style.overflow = '';
+    // Reset initialization when closing to allow re-initialization on next open
+    setCalInitialized(false);
   };
 
   const handleQuickReply = (replyValue) => {
     console.log('🔘 Quick reply clicked:', replyValue);
+    
+    // If it's a schedule demo request, open Cal.com modal
+    if (replyValue === 'schedule_demo') {
+      openCalModal();
+      return;
+    }
     
     // Add user message to show what button was clicked
     const userMessage = {
@@ -343,10 +458,9 @@ function App() {
       const botMessage = {
         id: Date.now() + 1,
         type: 'bot',
-        content: response.data.response,
+        content: cleanResponseContent(response.data.response),
         timestamp: new Date(),
         showContactForm: response.data.contact_form || false,
-        showMeetingForm: response.data.meeting_form || false,
         quickReplies: response.data.quick_replies || []
       };
 
@@ -357,16 +471,16 @@ function App() {
         return newMessages;
       });
       
-      // Activate contact form if needed
-      if (response.data.contact_form) {
+      // Activate contact form if needed (only if not already submitted)
+      if (response.data.contact_form && !contactFormSubmitted) {
         console.log('📋 Activating contact form');
         setContactForm(prev => ({ ...prev, isActive: true }));
       }
       
-      // Activate meeting form if needed
+      // Open Cal.com modal if meeting form is requested
       if (response.data.meeting_form) {
-        console.log('📅 Activating meeting form');
-        setMeetingForm(prev => ({ ...prev, isActive: true }));
+        console.log('📅 Opening Cal.com booking modal');
+        setTimeout(() => openCalModal(), 500);
       }
     } catch (error) {
       console.error('❌ Chat API request failed:', error.message);
@@ -378,7 +492,12 @@ function App() {
         id: Date.now() + 1,
         type: 'bot',
         content: 'Sorry, I encountered an error while processing your request. Please try again.',
-        timestamp: new Date()
+        timestamp: new Date(),
+        quickReplies: [
+          {"text": "Services", "value": "our_services"},
+          {"text": "Products", "value": "products"},
+          {"text": "Contact Us", "value": "contact_us"}
+        ]
       };
       
       console.log('⚠️ Error message object created:', errorMessage);
@@ -499,29 +618,39 @@ function App() {
                   {message.type === 'user' ? (
                     <p className="whitespace-pre-wrap">{message.content}</p>
                   ) : (
-                    <ReactMarkdown className="prose prose-sm max-w-none">
+                    <ReactMarkdown 
+                      className="prose prose-sm max-w-none"
+                      components={{
+                        ul: ({node, ...props}) => <ul style={{display: 'block', listStylePosition: 'outside'}} {...props} />,
+                        li: ({node, ...props}) => <li style={{display: 'list-item'}} {...props} />
+                      }}
+                    >
                       {message.content}
                     </ReactMarkdown>
                   )}
                   
                   {/* Quick Reply Buttons */}
                   {message.quickReplies && message.quickReplies.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {message.quickReplies.map((reply, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleQuickReply(reply.value)}
-                          className="bg-teal-100 text-teal-800 px-4 py-2 rounded-full text-sm font-medium hover:bg-teal-200 transition-colors border border-teal-300"
-                        >
-                          {reply.text}
-                        </button>
-                      ))}
+                    <div className="mt-4 pt-3 border-t border-gray-200">
+                      <p className="text-sm font-medium text-gray-700 mb-3">What would you like to explore next?</p>
+                      <div className="flex flex-wrap gap-2">
+                        {message.quickReplies.map((reply, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleQuickReply(reply.value)}
+                            className="bg-teal-100 text-teal-800 px-4 py-2 rounded-full text-sm font-medium hover:bg-teal-200 transition-colors border border-teal-300 shadow-sm"
+                          >
+                            {reply.text}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
 
                   {/* Contact Form */}
-                  {message.showContactForm && contactForm.isActive && (
+                  {message.showContactForm && contactForm.isActive && !contactFormSubmitted && (
                     <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+                      <p className="text-sm text-gray-700 mb-3 font-medium">To get more information, fill this form.</p>
                       <h4 className="font-semibold mb-3 text-gray-800">Contact Information</h4>
                       <div className="space-y-3">
                         <div>
@@ -575,61 +704,7 @@ function App() {
                     </div>
                   )}
 
-                  {/* Meeting Form */}
-                  {message.showMeetingForm && meetingForm.isActive && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 blink-animation">
-                      <h4 className="font-semibold mb-3 text-gray-800">📅 Schedule Meeting</h4>
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                          <input
-                            type="text"
-                            value={meetingForm.name}
-                            onChange={(e) => updateMeetingField('name', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Enter your full name"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-                          <input
-                            type="email"
-                            value={meetingForm.email}
-                            onChange={(e) => updateMeetingField('email', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Enter your email address"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                          <input
-                            type="tel"
-                            value={meetingForm.phone}
-                            onChange={(e) => updateMeetingField('phone', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Enter your phone number"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Meeting Purpose / Topics to Discuss *</label>
-                          <textarea
-                            value={meetingForm.meeting_purpose}
-                            onChange={(e) => updateMeetingField('meeting_purpose', e.target.value)}
-                            rows="3"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Please describe what you'd like to discuss in the meeting"
-                          />
-                        </div>
-                        <button
-                          onClick={handleMeetingSubmit}
-                          disabled={isSubmittingMeeting || !meetingForm.name || !meetingForm.email || !meetingForm.phone || !meetingForm.meeting_purpose}
-                          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors animate-pulse"
-                        >
-                          {isSubmittingMeeting ? 'Scheduling Meeting...' : 'Schedule Meeting'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
+
                 </div>
                 
                 
@@ -660,6 +735,80 @@ function App() {
         
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Cal.com Booking Modal */}
+      {isCalModalOpen && (
+        <div 
+          style={{
+            display: 'flex',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0,0,0,0.8)',
+            zIndex: 9999,
+            padding: '20px',
+            boxSizing: 'border-box',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              closeCalModal();
+            }
+          }}
+        >
+          <div 
+            style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: '1050px',
+              height: '90%',
+              maxHeight: '800px',
+              background: 'white',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              boxShadow: '0 10px 50px rgba(0,0,0,0.3)'
+            }}
+          >
+            <button
+              onClick={closeCalModal}
+              style={{
+                position: 'absolute',
+                top: '15px',
+                right: '15px',
+                background: 'rgba(0,0,0,0.1)',
+                border: 'none',
+                fontSize: '28px',
+                cursor: 'pointer',
+                zIndex: 10000,
+                color: '#666',
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '50%',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => e.target.style.background = 'rgba(0,0,0,0.2)'}
+              onMouseOut={(e) => e.target.style.background = 'rgba(0,0,0,0.1)'}
+            >
+              &times;
+            </button>
+            <div 
+              style={{
+                width: '100%',
+                height: '100%',
+                overflow: 'auto',
+                minHeight: '600px'
+              }}
+              id="my-cal-inline-30-min-meeting"
+            ></div>
+          </div>
+        </div>
+      )}
 
       {/* Input Area */}
       <div className="bg-white border-t px-6 py-4">

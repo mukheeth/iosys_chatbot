@@ -33,3 +33,36 @@ code {
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+/* Ensure markdown lists display vertically */
+.prose ul,
+.prose ol {
+  display: block !important;
+  list-style-position: outside !important;
+  margin-left: 1.5em !important;
+  margin-top: 0.5em !important;
+  margin-bottom: 0.5em !important;
+  padding-left: 0 !important;
+}
+
+.prose li {
+  display: list-item !important;
+  margin-top: 0.25em !important;
+  margin-bottom: 0.25em !important;
+  padding-left: 0.25em !important;
+}
+
+.prose ul li {
+  list-style-type: disc !important;
+}
+
+.prose ol li {
+  list-style-type: decimal !important;
+}
+
+/* Override any inline or flex display that might affect lists */
+.prose ul li,
+.prose ol li {
+  display: list-item !important;
+  width: 100% !important;
+}

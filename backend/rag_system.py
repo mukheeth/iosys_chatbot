@@ -163,7 +163,9 @@ class RAGSystem:
             return "schedule_demo"
         elif text_clean in ["know more about us", "know_more", "about us", "about"]:
             return "know_more"
-        elif text_clean in ["read an article", "read_article", "article", "blog"]:
+        elif text_clean in ["products", "product", "our products"]:
+            return "products"
+        elif text_clean in ["read an article", "read_article", "article", "blog", "case studies", "case_studies"]:
             return "read_article"
         elif text_clean in ["our services", "our_services", "services"]:
             return "our_services"
@@ -201,55 +203,56 @@ class RAGSystem:
         """Generate simple responses for greetings and basic questions"""
         if input_type == "greeting":
             return {
-                'answer': "Hi! I am an Assistant. Welcome to iOSYS 🙂\nHow can I help you today?",
+                'answer': "**Welcome to iOSYS! 👋**\n\nI'm here to help you discover how AI can transform your business. Ask me anything about our services, products, or book a meeting with our experts.",
                 'sources': [],
                 'quick_replies': [
-                    {"text": "Schedule a Meeting", "value": "schedule_demo"},
-                    {"text": "Know more about us", "value": "know_more"},
-                    {"text": "Read an article", "value": "read_article"},
-                    {"text": "Our services", "value": "our_services"},
-                    {"text": "Contact us", "value": "contact_us"}
+                    {"text": "Services", "value": "our_services"},
+                    {"text": "Products", "value": "products"},
+                    {"text": "Book a Meeting", "value": "schedule_demo"},
+                    {"text": "Contact Us", "value": "contact_us"}
                 ]
             }
         
         elif input_type == "end_chat":
             return {
-                'answer': "Thank you for chatting with me! 😊\n\nBefore you go, would you like to schedule a demo to see how iOSYS can transform your business? Our team would love to show you our AI solutions in action!\n\n🚀 **Ready to get started?**",
+                'answer': "**Thanks for connecting! 😊**\n\nBefore you go - our team would love to show you how iOSYS AI solutions can transform your business.\n\n**Ready to take the next step?**",
                 'sources': [],
                 'quick_replies': [
-                    {"text": "Schedule a Meeting", "value": "schedule_demo"},
-                    {"text": "Contact us", "value": "contact_us"},
-                    {"text": "Our services", "value": "our_services"}
+                    {"text": "Book a Meeting", "value": "schedule_demo"},
+                    {"text": "Services", "value": "our_services"},
+                    {"text": "Contact Us", "value": "contact_us"}
                 ]
             }
         elif input_type == "simple":
             question_lower = question.lower()
             if "who are you" in question_lower or "what is your name" in question_lower:
                 return {
-                    'answer': "I'm an AI assistant here to help answer your questions.",
+                    'answer': "I'm your AI assistant for iOSYS. I can help you learn about our AI solutions, products, and services.\n\n**What can I help you with?**",
                     'sources': [],
                     'quick_replies': [
-                        {"text": "Know more about us", "value": "know_more"},
-                        {"text": "Our services", "value": "our_services"}
+                        {"text": "Services", "value": "our_services"},
+                        {"text": "Products", "value": "products"},
+                        {"text": "Contact Us", "value": "contact_us"}
                     ]
                 }
             elif "help" in question_lower:
                 return {
-                    'answer': "I can help answer your questions. Just ask me anything you'd like to know.",
+                    'answer': "I'm here to help! Ask me about our AI services, products, case studies, or book a meeting with our team.\n\n**Where should we start?**",
                     'sources': [],
                     'quick_replies': [
-                        {"text": "Our services", "value": "our_services"},
-                        {"text": "Schedule a Meeting", "value": "schedule_demo"},
-                        {"text": "Contact us", "value": "contact_us"}
+                        {"text": "Services", "value": "our_services"},
+                        {"text": "Products", "value": "products"},
+                        {"text": "Book a Meeting", "value": "schedule_demo"}
                     ]
                 }
             elif "thank" in question_lower:
                 return {
-                    'answer': "You're welcome! Feel free to ask if you have any other questions.",
+                    'answer': "You're welcome! Happy to help anytime. 😊\n\n**Anything else you'd like to know?**",
                     'sources': [],
                     'quick_replies': [
-                        {"text": "Schedule a Meeting", "value": "schedule_demo"},
-                        {"text": "Our services", "value": "our_services"}
+                        {"text": "Services", "value": "our_services"},
+                        {"text": "Book a Meeting", "value": "schedule_demo"},
+                        {"text": "Contact Us", "value": "contact_us"}
                     ]
                 }
         
@@ -258,32 +261,47 @@ class RAGSystem:
     def _get_contact_response(self) -> Dict[str, Any]:
         """Generate response for contact requests"""
         return {
-            'answer': "I'd be happy to help you connect with our team! To proceed, I'll need to collect some information from you. Please provide the following details:\n\n📝 **Required Information:**\n• Your full name\n• Email address\n• Phone number\n• Message or reason for contacting\n\nOnce you provide all the details, I'll show you a 'Send Request' button to submit your contact request.",
+            'answer': "**Let's Connect! 📧**\n\nI'll help you get in touch with our team. Share a few quick details and we'll reach out to you shortly.\n\n• Full name\n• Email address\n• Phone number\n• Brief message\n\nOnce you provide the details, click 'Send Request' to submit.",
             'sources': [],
-            'contact_form': True
+            'contact_form': True,
+            'quick_replies': [
+                {"text": "Services", "value": "our_services"},
+                {"text": "Products", "value": "products"},
+                {"text": "Book a Meeting", "value": "schedule_demo"}
+            ]
         }
     
     def _get_meeting_response(self) -> Dict[str, Any]:
         """Generate response for meeting requests"""
         return {
-            'answer': "Great! I'd love to schedule a meeting for you. 🗓️\n\nTo book your personalized meeting with our experts, please provide the following details:\n\n📅 **Meeting Information Required:**\n• Your full name\n• Email address\n• Phone number\n• Preferred date and time\n• Meeting purpose/topics to discuss\n\nOnce you provide all the details, I'll show you a 'Schedule Meeting' button to book your appointment.",
+            'answer': "**Book Your Meeting! 🗓️**\n\nLet's schedule a personalized session with our AI experts. Just provide a few details:\n\n• Full name\n• Email address\n• Phone number\n• Preferred date & time\n• Topics to discuss\n\nClick 'Schedule Meeting' when ready!",
             'sources': [],
-            'meeting_form': True
+            'meeting_form': True,
+            'quick_replies': [
+                {"text": "Services", "value": "our_services"},
+                {"text": "Products", "value": "products"},
+                {"text": "Contact Us", "value": "contact_us"}
+            ]
         }
     
     def _get_quick_reply_response(self, reply_type: str) -> Dict[str, Any]:
         """Generate responses for quick reply buttons"""
         if reply_type == "schedule_demo":
             return {
-                'answer': "Great! I'd love to schedule a meeting for you. 🗓️\n\nTo book your personalized meeting, please let me know your preferred:\n• Date\n• Time\n• Any specific areas you'd like to focus on\n\nOr would you prefer me to connect you directly with our team?",
+                'answer': "**Book Your Meeting! 🗓️**\n\nLet's connect you with our team. Share your details and we'll schedule a personalized demo.\n\n• Date & time preference\n• Topics you want to explore\n• Best way to reach you\n\n**Ready to schedule?**",
                 'sources': [],
-                'contact_form': True
+                'contact_form': True,
+                'quick_replies': [
+                    {"text": "Services", "value": "our_services"},
+                    {"text": "Products", "value": "products"},
+                    {"text": "Contact Us", "value": "contact_us"}
+                ]
             }
         elif reply_type == "know_more":
             # Use RAG system to get company information from vector database
             if self.vectorstore and self.qa_chain:
                 try:
-                    result = self.qa_chain.invoke({"query": "Tell me about iOSYS company, what they do, why choose them, their expertise and achievements."})
+                    result = self.qa_chain.invoke({"query": "Tell me about iOSYS company - what they do, their expertise, services, and achievements. Do NOT include why choose iOSYS or benefits sections."})
                     
                     # Add contextual quick replies
                     quick_replies = self._get_contextual_buttons(result['result'], "know_more")
@@ -291,13 +309,38 @@ class RAGSystem:
                     return {
                         'answer': result['result'],
                         'sources': [],
-                        'quick_replies': quick_replies
+                        'quick_replies': quick_replies,
+                        'contact_form': True
                     }
                 except Exception as e:
                     logger.warning(f"Failed to get company info from vector database: {e}")
             
             # Fallback to basic search if vector database fails
-            return self._basic_search("Tell me about iOSYS company, what they do, why choose them, their expertise and achievements.")
+            fallback_result = self._basic_search("Tell me about iOSYS company - what they do, their expertise, services, and achievements. Do NOT include why choose iOSYS or benefits sections.")
+            fallback_result['contact_form'] = True
+            return fallback_result
+        elif reply_type == "products":
+            # Use RAG system to get products information from vector database
+            if self.vectorstore and self.qa_chain:
+                try:
+                    result = self.qa_chain.invoke({"query": "What are ALL iOSYS products? List every product available including aippoint.ai, AI Support Chatbot, Social Media Automation, and any other products or solutions."})
+                    
+                    # Add contextual quick replies
+                    quick_replies = self._get_contextual_buttons(result['result'], "products")
+                    
+                    return {
+                        'answer': result['result'],
+                        'sources': [],
+                        'quick_replies': quick_replies,
+                        'contact_form': True
+                    }
+                except Exception as e:
+                    logger.warning(f"Failed to get products from vector database: {e}")
+            
+            # Fallback to basic search if vector database fails
+            fallback_result = self._basic_search("What are ALL iOSYS products? List every product available including aippoint.ai, AI Support Chatbot, Social Media Automation, and any other products or solutions.")
+            fallback_result['contact_form'] = True
+            return fallback_result
         elif reply_type == "read_article":
             # Use RAG system to get article/blog information from vector database
             if self.vectorstore and self.qa_chain:
@@ -310,7 +353,8 @@ class RAGSystem:
                     return {
                         'answer': result['result'],
                         'sources': [],
-                        'quick_replies': quick_replies
+                        'quick_replies': quick_replies,
+                        'contact_form': True
                     }
                 except Exception as e:
                     logger.warning(f"Failed to get articles from vector database: {e}")
@@ -329,13 +373,16 @@ class RAGSystem:
                     return {
                         'answer': result['result'],
                         'sources': [],
-                        'quick_replies': quick_replies
+                        'quick_replies': quick_replies,
+                        'contact_form': True
                     }
                 except Exception as e:
                     logger.warning(f"Failed to get services from vector database: {e}")
             
             # Fallback to basic search if vector database fails
-            return self._basic_search("What are iOSYS services and offerings? List all services with details.")
+            fallback_result = self._basic_search("What are iOSYS services and offerings? List all services with details.")
+            fallback_result['contact_form'] = True
+            return fallback_result
         elif reply_type == "contact_us":
             # Use RAG system to get contact information from vector database
             if self.vectorstore and self.qa_chain:
@@ -356,12 +403,13 @@ class RAGSystem:
             return contact_result
         
         return {
-            'answer': "I'm not sure how to help with that. Please try one of the options from the menu!",
+            'answer': "I'm here to help! Try one of these options to get started.",
             'sources': [],
             'quick_replies': [
-                {"text": "Our services", "value": "our_services"},
-                {"text": "Schedule a demo", "value": "schedule_demo"},
-                {"text": "Contact us", "value": "contact_us"}
+                {"text": "Services", "value": "our_services"},
+                {"text": "Products", "value": "products"},
+                {"text": "Book a Meeting", "value": "schedule_demo"},
+                {"text": "Contact Us", "value": "contact_us"}
             ]
         }
     
@@ -373,106 +421,116 @@ class RAGSystem:
         # Service-related responses
         if any(keyword in response_lower for keyword in ['service', 'ai', 'development', 'solution', 'automation']):
             if input_type != "our_services":
-                buttons.append({"text": "Our services", "value": "our_services"})
-            buttons.append({"text": "Schedule a Meeting", "value": "schedule_demo"})
+                buttons.append({"text": "Services", "value": "our_services"})
+            if input_type != "products":
+                buttons.append({"text": "Products", "value": "products"})
+            buttons.append({"text": "Book a Meeting", "value": "schedule_demo"})
         
         # Demo/meeting related responses
-        if any(keyword in response_lower for keyword in ['demo', 'meeting', 'consultation', 'discuss']):
-            if {"text": "Schedule a Meeting", "value": "schedule_demo"} not in buttons:
-                buttons.append({"text": "Schedule a Meeting", "value": "schedule_demo"})
-            buttons.append({"text": "Contact us", "value": "contact_us"})
+        elif any(keyword in response_lower for keyword in ['demo', 'meeting', 'consultation', 'discuss']):
+            if {"text": "Book a Meeting", "value": "schedule_demo"} not in buttons:
+                buttons.append({"text": "Book a Meeting", "value": "schedule_demo"})
+            buttons.append({"text": "Contact Us", "value": "contact_us"})
+            buttons.append({"text": "Services", "value": "our_services"})
         
         # Contact/support related responses
-        if any(keyword in response_lower for keyword in ['contact', 'support', 'help', 'team']):
-            if {"text": "Contact us", "value": "contact_us"} not in buttons:
-                buttons.append({"text": "Contact us", "value": "contact_us"})
+        elif any(keyword in response_lower for keyword in ['contact', 'support', 'help', 'team']):
+            if {"text": "Contact Us", "value": "contact_us"} not in buttons:
+                buttons.append({"text": "Contact Us", "value": "contact_us"})
+            buttons.append({"text": "Services", "value": "our_services"})
         
         # Information/learning related responses
-        if any(keyword in response_lower for keyword in ['learn', 'information', 'about', 'company']):
+        elif any(keyword in response_lower for keyword in ['learn', 'information', 'about', 'company', 'product']):
             if input_type != "know_more":
-                buttons.append({"text": "Know more about us", "value": "know_more"})
-            if input_type != "read_article":
-                buttons.append({"text": "Read an article", "value": "read_article"})
+                buttons.append({"text": "Know More", "value": "know_more"})
+            buttons.append({"text": "Case Studies", "value": "read_article"})
+            buttons.append({"text": "Contact Us", "value": "contact_us"})
         
         # Default buttons if no specific context found
-        if not buttons:
+        else:
             buttons = [
-                {"text": "Our services", "value": "our_services"},
-                {"text": "Schedule a Meeting", "value": "schedule_demo"},
-                {"text": "Contact us", "value": "contact_us"}
+                {"text": "Services", "value": "our_services"},
+                {"text": "Products", "value": "products"},
+                {"text": "Case Studies", "value": "read_article"},
+                {"text": "Book a Meeting", "value": "schedule_demo"},
+                {"text": "Contact Us", "value": "contact_us"}
             ]
         
-        # Limit to 3 buttons max for better UX
-        return buttons[:3]
+        # Return 3-5 buttons for interactive options
+        return buttons[:5]
     
     def _setup_qa_chain(self):
         """Setup the QA chain with custom prompt optimized for Groq"""
-        # Enhanced prompt template optimized for clean, structured responses
+        # Enhanced prompt template optimized for short, chat-friendly responses
         prompt_template = """You are an iOSYS AI assistant. Answer questions using ONLY information from the provided context. Never make up information.
 
         Context: {context}
 
         Question: {question}
 
-        CRITICAL FORMATTING RULES:
-        1. Use ONLY information from the context - never invent details
-        2. Add TWO blank lines between major sections
-        3. Add ONE blank line between individual items in lists
-        4. Use appropriate emojis for visual appeal
-        5. Keep service descriptions brief (one line max)
-        6. Format benefits as a clear bulleted list
-        7. Case studies should be concise (one line per case study)
-        8. Always end with a call-to-action
+        STRICT RESPONSE RULES (MANDATORY):
+        1. MAXIMUM LENGTH:
+           • Summary: EXACTLY 2-3 lines only (no more)
+           • Bullet points: EXACTLY 4-6 bullets (provide comprehensive list)
+           • Each bullet: MAXIMUM 3-5 words (just the name/title, NO descriptions)
+           • No long sentences, no paragraphs, no full explanations in bullets
+        
+        2. FORMAT (ALWAYS FOLLOW THIS):
+           Title
+           2-3 line summary
+           4-6 concise bullet points (names only, no descriptions)
+           "Next options" section
+        
+        3. FORBIDDEN:
+           ✗ No long marketing content
+           ✗ No repeating the same text
+           ✗ No 7+ bullet points (MAXIMUM 6)
+           ✗ No full page explanations
+           ✗ No paragraphs longer than 3 lines
+           ✗ No "Why choose iOSYS" sections for "know more" queries
+           ✗ NO descriptions in bullet points (just names/titles)
+           ✗ NO sentences in bullet points (just 3-5 words max)
+        
+        4. DO NOT include "What would you like to explore next?" text in your response
+           The buttons will be displayed automatically - just provide the content
+        
+        5. TONE: Friendly, simple, clear, business-focused (like Cal.com, Intercom, Notion AI)
+        
+        6. Use ONLY information from the context - never invent details
+        7. Answer STRICTLY to what is asked - do NOT add extra sections
+        8. Break down complex information into condensed versions only
 
-        FORMAT TEMPLATES:
+        RESPONSE FORMAT (MANDATORY):
 
-        For Services Section:
-        ## iOSYS Services and Offerings
+        **[Topic Title]**
 
-        🚀 **AI Product Roadmap**
+        [EXACTLY 1-2 lines summary - keep it simple and clear]
 
-        💡 **Build & Modernize with AI**
+        • [Bullet point 1 - 3-5 words max, just the name/title]
+        • [Bullet point 2 - 3-5 words max, just the name/title]
+        • [Bullet point 3 - 3-5 words max, just the name/title, only if needed]
 
-        🤖 **Autonomous Agents**
+        EXAMPLES:
 
-        ⚙️ **AutoFlow AI**
+        Question: "What services does iOSYS offer?"
+        **iOSYS Services**
 
-        ✨ **Ready To Go AI**
+        We help businesses build and scale with AI-powered solutions.
 
-        📈 **AmplifyAI Marketing**
+        • AI Product Roadmap
+        • Build & Modernize with AI
+        • Autonomous Agents
 
+        ---
 
-        For Benefits Section:
-        ## Benefits of iOSYS Services
+        Question: "Tell me about iOSYS" or "Know more about iOSYS"
+        **About iOSYS**
 
-        • 📊 Increased efficiency and productivity
-        • 💰 Lower operational and marketing costs
-        • 🎯 Smarter, data-driven decision-making
-        • 🔄 Seamless automation across departments
-        • 🚀 Scalable AI solutions for growing businesses
+        iOSYS builds AI and automation solutions for modern businesses.
 
-
-        For Products Section:
-        ## Products
-
-        📊 **aippoint.ai - Smart Hiring Platform**
-
-        🤖 **AI Support Chatbot - Intelligent customer support**
-
-        📱 **Social Media Automation System - Automates content creation and scheduling**
-
-
-        For Case Studies:
-        ## Case Studies & Success Stories
-
-        • **AI-Driven Credit Scoring System**: Accelerated credit processing for a global bank
-        • **Predicting Consumer Switching Behaviour**: Reduced churn for a telecom provider
-        • **AI-Driven Chatbot for Banking Onboarding**: Streamlined onboarding process
-
-
-        ALWAYS end with:
-
-        🎯 **Ready to transform your business? Schedule a meeting with our experts today!**
+        • AI product development
+        • Autonomous AI agents
+        • Digital transformation
 
         Answer:"""
         
@@ -597,56 +655,78 @@ Information:
 
 Question: {question}
 
-CRITICAL FORMATTING RULES:
-1. Use ONLY information from the context - never invent details
-2. Add TWO blank lines between major sections
-3. Add ONE blank line between individual items in lists
-4. Use appropriate emojis for visual appeal
-5. Keep service descriptions brief (one line max)
-6. Format benefits as a clear bulleted list
-7. Case studies should be concise (one line per case study)
-8. Always end with a call-to-action
+        STRICT RESPONSE RULES (MANDATORY):
+        1. MAXIMUM LENGTH:
+           • Summary: EXACTLY 2-3 lines only (no more)
+           • Bullet points: EXACTLY 4-6 bullets (provide comprehensive list)
+           • Each bullet: MAXIMUM 3-5 words (just the name/title, NO descriptions)
+           • No long sentences, no paragraphs, no full explanations in bullets
+        
+        2. FORMAT (ALWAYS FOLLOW THIS):
+           Title
+           2-3 line summary
+           4-6 concise bullet points (names only, no descriptions)
+           "Next options" section
+        
+        3. FORBIDDEN:
+           ✗ No long marketing content
+           ✗ No repeating the same text
+           ✗ No 7+ bullet points (MAXIMUM 6)
+           ✗ No full page explanations
+           ✗ No paragraphs longer than 3 lines
+           ✗ No "Why choose iOSYS" sections for "know more" queries
+           ✗ NO descriptions in bullet points (just names/titles)
+           ✗ NO sentences in bullet points (just 3-5 words max)
+        
+        4. DO NOT include "What would you like to explore next?" text in your response
+           The buttons will be displayed automatically - just provide the content
+        
+        5. TONE: Friendly, simple, clear, business-focused (like Cal.com, Intercom, Notion AI)
+        
+        6. Use ONLY information from the context - never invent details
+        7. Answer STRICTLY to what is asked - do NOT add extra sections
+        8. Break down complex information into condensed versions only
 
-FORMAT TEMPLATES:
+        RESPONSE FORMAT (MANDATORY):
 
-For Services Section:
-## iOSYS Services and Offerings
+        **[Topic Title]**
 
-🚀 **AI Product Roadmap**
+        [EXACTLY 2-3 lines summary - keep it simple and clear]
 
-💡 **Build & Modernize with AI**
+        • [Bullet point 1 - 3-5 words max, just the name/title]
+        • [Bullet point 2 - 3-5 words max, just the name/title]
+        • [Bullet point 3 - 3-5 words max, just the name/title]
+        • [Bullet point 4 - 3-5 words max, just the name/title]
+        • [Bullet point 5 - 3-5 words max, just the name/title, if available]
+        • [Bullet point 6 - 3-5 words max, just the name/title, if available]
 
-🤖 **Autonomous Agents**
+        EXAMPLES:
 
+        Question: "What services does iOSYS offer?"
+        **iOSYS Services**
 
-For Benefits Section:
-## Benefits of iOSYS Services
+        We help businesses build and scale with AI-powered solutions tailored to your needs.
 
-• 📊 Increased efficiency and productivity
-• 💰 Lower operational and marketing costs
-• 🎯 Smarter, data-driven decision-making
+        • AI Product Roadmap
+        • Build & Modernize with AI
+        • Autonomous Agents
+        • AutoFlow AI
+        • Ready To Go AI
+        • AmplifyAI Marketing
 
+        ---
 
-For Products Section:
-## Products
+        Question: "Tell me about iOSYS" or "Know more about iOSYS"
+        **About iOSYS**
 
-📊 **aippoint.ai - Smart Hiring Platform**
+        iOSYS is a global technology company specializing in AI-driven solutions and business automation.
 
-🤖 **AI Support Chatbot**
+        • AI product development
+        • Autonomous AI agents
+        • Digital transformation
+        • Business automation
 
-
-For Case Studies:
-## Case Studies & Success Stories
-
-• **AI-Driven Credit Scoring System**: Accelerated credit processing
-• **Predicting Consumer Switching Behaviour**: Reduced churn
-
-
-ALWAYS end with:
-
-🎯 **Ready to transform your business? Schedule a meeting with our experts today!**
-
-Answer:"""
+        Answer:"""
         
         # Get response from Groq
         response = self.llm.invoke(prompt)
@@ -690,14 +770,19 @@ Answer:"""
                 return self._get_meeting_response()
             
             # Handle quick reply options
-            if input_type in ["schedule_demo", "know_more", "read_article", "our_services", "contact_us", "end_chat"]:
+            if input_type in ["schedule_demo", "know_more", "products", "read_article", "our_services", "contact_us", "end_chat"]:
                 return self._get_quick_reply_response(input_type)
             
             # Check if documents are initialized for complex queries
             if not self.is_initialized:
                 return {
                     'answer': "Please initialize the system first before asking questions.",
-                    'sources': []
+                    'sources': [],
+                    'quick_replies': [
+                        {"text": "Services", "value": "our_services"},
+                        {"text": "Products", "value": "products"},
+                        {"text": "Contact Us", "value": "contact_us"}
+                    ]
                 }
             
             # Use ChromaDB vector search if available
@@ -742,5 +827,10 @@ Answer:"""
             logger.error(f"Error processing query: {str(e)}")
             return {
                 'answer': "I apologize, but I encountered an error while processing your question. Please make sure your Groq API key is set correctly in the .env file.",
-                'sources': []
+                'sources': [],
+                'quick_replies': [
+                    {"text": "Services", "value": "our_services"},
+                    {"text": "Products", "value": "products"},
+                    {"text": "Contact Us", "value": "contact_us"}
+                ]
             }
